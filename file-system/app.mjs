@@ -5,7 +5,7 @@ import fs from "fs/promises";
   const CREATE_FILE = "create a file";
   const DELETE_FILE = "delete a file";
   const RENAME_FILE = "rename a file";
-  const ADD_TO_FILE = "add to the file ";
+  const ADD_TO_FILE = "add to the file";
   const createFile = async (path) => {
     let existingFileHandle;
 
@@ -51,15 +51,23 @@ import fs from "fs/promises";
     }
   };
 
+  let addedContent;
+
   const addToFile = async (path, content) => {
-    console.log(`adding ${path} to ${content}`);
+    if (addedContent === content) return;
+    try {
+      const fileHandle = await fs.open(path, "a");
+      fileHandle.write(content);
+      addedContent = content;
+      console.log("done");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const commandFileHandler = await fs.open("./command.txt", "r");
 
   commandFileHandler.on("change", async () => {
-    console.log("The file just changed");
-
     // get the of our file
     const size = (await commandFileHandler.stat()).size;
     //   Allocate buffer with the size of the file
