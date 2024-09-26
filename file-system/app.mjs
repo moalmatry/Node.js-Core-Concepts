@@ -1,6 +1,11 @@
 import fs from "fs/promises";
 
 (async () => {
+  // commands
+  const CREATE_FILE = "create a file";
+  const DELETE_FILE = "delete a file";
+  const RENAME_FILE = "rename a file";
+  const ADD_TO_FILE = "add to the file ";
   const createFile = async (path) => {
     let existingFileHandle;
 
@@ -23,8 +28,33 @@ import fs from "fs/promises";
     //   console.error(err);
     // }
   };
-  // commands
-  const CREATE_FILE = "create a file";
+
+  const deleteFile = async (path) => {
+    try {
+      await fs.unlink(path);
+      console.log(`successfully deleted ${path}`);
+    } catch (error) {
+      console.log("file not found");
+      console.error("there was an error:", error.message);
+    }
+  };
+
+  const renameFile = async (oldPath, newPath) => {
+    // console.log(`${oldPath} rename to ${newPath}`);
+
+    try {
+      await fs.rename(oldPath, newPath);
+      const stats = await fs.stat(oldPath);
+      console.log(`stats: ${JSON.stringify(stats)}`);
+    } catch (error) {
+      console.error("there was an error:", error.message);
+    }
+  };
+
+  const addToFile = async (path, content) => {
+    console.log(`adding ${path} to ${content}`);
+  };
+
   const commandFileHandler = await fs.open("./command.txt", "r");
 
   commandFileHandler.on("change", async () => {
@@ -50,6 +80,25 @@ import fs from "fs/promises";
     if (command.includes(CREATE_FILE)) {
       const filePath = command.substring(CREATE_FILE.length + 1);
       createFile(filePath);
+    }
+    // delete file
+    if (command.includes(DELETE_FILE)) {
+      const filePath = command.substring(DELETE_FILE.length + 1);
+      deleteFile(filePath);
+    }
+
+    if (command.includes(RENAME_FILE)) {
+      const _idx = command.indexOf(" to ");
+      const oldFilePath = command.substring(RENAME_FILE.length + 1, _idx);
+      const newFilePath = command.substring(_idx + 4);
+      renameFile(oldFilePath, newFilePath);
+    }
+
+    if (command.includes(ADD_TO_FILE)) {
+      const _idx = command.indexOf(" this content: ");
+      const filePath = command.substring(ADD_TO_FILE.length, _idx);
+      const content = command.substring(_idx + 15);
+      addToFile(filePath, content);
     }
   });
 
