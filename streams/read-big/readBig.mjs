@@ -35,5 +35,9 @@ import fs from "fs/promises";
   streamWrite.on("drain", () => {
     streamRead.resume();
   });
+
+  streamRead("end", () => {
+    console.log("Done Reading");
+  });
   console.timeEnd("time");
 })();
