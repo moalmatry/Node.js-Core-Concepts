@@ -11,8 +11,26 @@ server.on("request", (req, res) => {
   console.log(req.headers);
 
   console.log("----Body-----");
+  const name = req.headers.name;
+  let data = "";
   req.on("data", (chunk) => {
-    console.log(chunk.toString("utf-8"));
+    // console.log(chunk.toString());
+    data += chunk.toString();
+    // console.log(data);
+  });
+
+  // it should be on end but end doesn't work on windows
+  req.on("data", () => {
+    // data = JSON.parse(data);
+
+    console.log(data);
+    console.log(name);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        message: `Post with title ${data.title} was created by ${name}`,
+      })
+    );
   });
 });
 

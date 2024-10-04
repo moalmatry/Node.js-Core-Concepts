@@ -14,14 +14,28 @@ const request = http.request({
   path: "/create-post",
   headers: {
     "Content-Type": "application/json",
+    name: "Joe",
   },
 });
 
 // work only once
-request.on("response", (response) => {});
+request.on("response", (response) => {
+  console.log("***************Status***************");
+  console.log(response.statusCode);
+  console.log("***************Header***************");
+  console.log(response.headers);
+  console.log("***************Body***************");
+  response.on("data", (chunk) => {
+    console.log(chunk.toString());
+  });
+  response.on("end", () => {
+    console.log("***************No more data***************");
+  });
+});
 
-request.write(JSON.stringify({ message: "hellos world" }));
-request.write(JSON.stringify({ message: "how are you" }));
-request.write(JSON.stringify({ message: "still there" }));
-
-request.end(JSON.stringify({ message: "this will be my last message?" }));
+request.write(
+  JSON.stringify({
+    title: "Title of my post",
+    body: "This some text and more and more",
+  })
+);
