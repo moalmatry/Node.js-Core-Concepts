@@ -21,10 +21,8 @@ server.on("request", (req, res) => {
 
   // it should be on end but end doesn't work on windows
   req.on("data", () => {
-    // data = JSON.parse(data);
+    data = JSON.parse(data);
 
-    console.log(data);
-    console.log(name);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
       JSON.stringify({
