@@ -9,6 +9,7 @@ class Butter {
      * post/upload: () => { ... }
      */
     this.routes = {};
+    this.middlewares = [];
 
     this.server.on("request", (req, res) => {
       res.sendFiles = async (path, mime) => {
@@ -36,12 +37,25 @@ class Butter {
           .json({ error: `Cant not ${req.method} ${req.url}` });
       }
 
+      // Run all middlewares before running the routes
+      this.middlewares[0]((req, res) => {
+        this.middlewares[1]((req, res) => {
+          this.middlewares[2]((req, res) => {
+            this.routes[req.method.toLowerCase() + req.url](req, res);
+          });
+        });
+      });
+
       this.routes[req.method.toLowerCase() + req.url](req, res);
     });
   }
 
   route(method, path, cb) {
     this.routes[method + path] = cb;
+  }
+
+  beforeEach(cb) {
+    this.middlewares.push(cb);
   }
   listen(port, cb) {
     this.server.listen(port, () => {
