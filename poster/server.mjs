@@ -23,16 +23,42 @@ const PORT = 8000;
 
 const server = new Butter();
 
-server.beforeEach(() => {
-  console.log("Middleware one");
+// For Authentication
+server.beforeEach((req, res, next) => {
+  const routesToAuth = [
+    "GET /api/user",
+    "PUT /api/user",
+    "POST /api/posts",
+    "DELETE /api/logout",
+  ];
+
+  if (routesToAuth.indexOf(req.method + " " + req.url) !== -1) {
+    // if we have a token cookie , then save the userId to the req object
+    if (req.headers.cookie) {
+      const token = req.headers.cookie.split("=")[1];
+      const session = SESSIONS.find((session) => session.token === token);
+      if (session) {
+        req.userId = session.userId;
+        return next();
+      }
+    }
+    return res.status(401).json({ error: "Unauthorized" });
+  } else {
+    next();
+  }
 });
 
-server.beforeEach(() => {
-  console.log("Middleware two");
+// For parsing JSON body
+server.beforeEach((req, res, next) => {
+  if (req.headers["content-type"] === "application/json") {
+  } else {
+    next();
+  }
 });
 
-server.beforeEach(() => {
+server.beforeEach((req, res, next) => {
   console.log("Middleware three");
+  next();
 });
 
 // -----Files Route-----
@@ -89,15 +115,8 @@ server.route("delete", "/api/login", () => {});
 
 // Send user info
 server.route("get", "/api/user", (req, res) => {
-  const token = req.headers.cookie.split("=")[1];
-  const session = SESSIONS.find((session) => session.token === token);
-  if (session) {
-    const user = USERS.find((u) => u.id === session.userId);
-
-    res.json({ username: user.username, name: user.name });
-  } else {
-    res.status(401).json({ error: "Unauthorized" });
-  }
+  const user = USERS.find((u) => u.id === req.userId);
+  res.json({ username: user.username, name: user.name });
 });
 
 // update user info

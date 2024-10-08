@@ -30,23 +30,34 @@ class Butter {
         res.end(JSON.stringify(data));
       };
 
-      // if the routes object doesn't have a key req.method + req.url return 404
-      if (!this.routes[req.method.toLocaleLowerCase() + req.url]) {
-        return res
-          .status(404)
-          .json({ error: `Cant not ${req.method} ${req.url}` });
-      }
-
       // Run all middlewares before running the routes
-      this.middlewares[0]((req, res) => {
-        this.middlewares[1]((req, res) => {
-          this.middlewares[2]((req, res) => {
-            this.routes[req.method.toLowerCase() + req.url](req, res);
-          });
-        });
-      });
+      // this.middlewares[0](req, res, () => {
+      //   this.middlewares[1](req, req, () => {
+      //     this.middlewares[2](req, res, () => {
+      //       this.routes[req.method.toLowerCase() + req.url](req, res);
+      //     });
+      //   });
+      // });
 
-      this.routes[req.method.toLowerCase() + req.url](req, res);
+      const runMiddleware = (req, res, middlewares, index) => {
+        if (index === middlewares.length) {
+          // if the routes object doesn't have a key req.method + req.url return 404
+          if (!this.routes[req.method.toLocaleLowerCase() + req.url]) {
+            return res
+              .status(404)
+              .json({ error: `Cant not ${req.method} ${req.url}` });
+          }
+          this.routes[req.method.toLowerCase() + req.url](req, res);
+        } else {
+          middlewares[index](req, res, () => {
+            runMiddleware(req, res, middlewares, index + 1);
+          });
+        }
+      };
+
+      runMiddleware(req, res, this.middlewares, 0);
+
+      // this.routes[req.method.toLowerCase() + req.url](req, res);
     });
   }
 
