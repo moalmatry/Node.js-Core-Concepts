@@ -9,6 +9,8 @@
   "author": "Mohamed Almatry",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^22.7.4"
+    "@types/node": "^22.7.4",
+    "cpeak": "1.4.0",
+    "pm2": "^5.4.3"
   }
 }
