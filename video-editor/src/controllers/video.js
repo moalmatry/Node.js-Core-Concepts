@@ -6,14 +6,12 @@ const util = require("../lib/util");
 const DB = require("../DB");
 const FF = require("../lib/FF");
 
+// Return the list of all videos that the user has uploaded
 const getVideos = (req, res, handleErr) => {
-  const name = req.params.get("name");
+  DB.update();
+  const videos = DB.videos.filter((video) => video.userId === req.userId);
 
-  if (name) {
-    res.json({ message: `Your name is ${name}` });
-  } else {
-    return handleErr({ status: 400, message: "Please specify a name." });
-  }
+  res.status(200).json(videos);
 };
 
 // Upload a video file
@@ -69,6 +67,51 @@ const uploadVideo = async (req, res, handleErr) => {
     util.deleteFolder(`./storage/${videoId}`);
     if (e.code !== "ECONNRESET") return handleErr(e);
   }
+};
+
+const getVideoAsset = async (req, res, handleErr) => {
+  const videoId = req.params.get("videoId");
+  const type = req.params.get("type");
+
+  DB.update();
+  const video = DB.videos.find((video) => videoId === video.videoId);
+
+  if (!video) {
+    return handleErr({ status: 404, message: "Video not found" });
+  }
+
+  let file, mimeType, filename;
+
+  switch (type) {
+    case "thumbnail":
+      file = await fs.open(`./storage/${videoId}/thumbnail.jpg`, "r");
+      mimeType = "image/jpeg";
+      break;
+
+    case "original":
+      file = await fs.open(
+        `./storage/${videoId}/original.${video.extension}`,
+        "r"
+      );
+      mimeType = "video/mp4";
+      filename = `${video.name}.${video.extension}`;
+    // audio;
+    // resize
+    // original
+  }
+  // grab the file size
+  const stat = await file.stat();
+  const fileStream = file.createReadStream();
+
+  // Set the content-type header based on the file type
+  res.setHeader("Content-Type", mimeType);
+  // Set the content-length to the size of the file
+  res.setHeader("Content-Length", stat.size);
+
+  res.status(200);
+  await pipeline(fileStream, res);
+
+  file.close();
 };
 
 const controller = {

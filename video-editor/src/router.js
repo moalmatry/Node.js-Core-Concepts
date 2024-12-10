@@ -23,6 +23,11 @@ module.exports = (server) => {
   // ************ USER ROUTES ************* //
   // ------------------------------------------------ //
 
-  server.route("get", "/api/videos-temp", Video.getVideos);
+  // Return the list of all videos that the user has uploaded
+  server.route("get", "/api/videos", Video.getVideos);
+
+  // Upload a video file
   server.route("post", "/api/upload-video", Video.uploadVideo);
+
+  server.route("get", "/get-video-asset", Video.getVideoAsset);
 };

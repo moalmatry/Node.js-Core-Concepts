@@ -13,21 +13,15 @@ var util = require("../lib/util");
 
 var DB = require("../DB");
 
-var FF = require("../lib/FF");
+var FF = require("../lib/FF"); // Return the list of all videos that the user has uploaded
+
 
 var getVideos = function getVideos(req, res, handleErr) {
-  var name = req.params.get("name");
-
-  if (name) {
-    res.json({
-      message: "Your name is ".concat(name)
-    });
-  } else {
-    return handleErr({
-      status: 400,
-      message: "Please specify a name."
-    });
-  }
+  DB.update();
+  var videos = DB.videos.filter(function (video) {
+    return video.userId === req.userId;
+  });
+  res.status(200).json(videos);
 }; // Upload a video file
 
 
@@ -119,6 +113,78 @@ var uploadVideo = function uploadVideo(req, res, handleErr) {
       }
     }
   }, null, null, [[7, 29]]);
+};
+
+var getVideoAsset = function getVideoAsset(req, res, handleErr) {
+  var videoId, type, video, file, mimeType, filename, stat, fileStream;
+  return regeneratorRuntime.async(function getVideoAsset$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          videoId = req.params.get("videoId");
+          type = req.params.get("type");
+          DB.update();
+          video = DB.videos.find(function (video) {
+            return videoId === video.videoId;
+          });
+
+          if (video) {
+            _context2.next = 6;
+            break;
+          }
+
+          return _context2.abrupt("return", handleErr({
+            status: 404,
+            message: "Video not found"
+          }));
+
+        case 6:
+          _context2.t0 = type;
+          _context2.next = _context2.t0 === "thumbnail" ? 9 : _context2.t0 === "original" ? 14 : 19;
+          break;
+
+        case 9:
+          _context2.next = 11;
+          return regeneratorRuntime.awrap(fs.open("./storage/".concat(videoId, "/thumbnail.jpg"), "r"));
+
+        case 11:
+          file = _context2.sent;
+          mimeType = "image/jpeg";
+          return _context2.abrupt("break", 19);
+
+        case 14:
+          _context2.next = 16;
+          return regeneratorRuntime.awrap(fs.open("./storage/".concat(videoId, "/original.").concat(video.extension), "r"));
+
+        case 16:
+          file = _context2.sent;
+          mimeType = "video/mp4";
+          filename = "".concat(video.name, ".").concat(video.extension);
+
+        case 19:
+          _context2.next = 21;
+          return regeneratorRuntime.awrap(file.stat());
+
+        case 21:
+          stat = _context2.sent;
+          fileStream = file.createReadStream(); // Set the content-type header based on the file type
+
+          res.setHeader("Content-Type", mimeType); // Set the content-length to the size of the file
+
+          res.setHeader("Content-Length", stat.size);
+          res.status(200);
+          _context2.next = 28;
+          return regeneratorRuntime.awrap(pipeline(fileStream, res));
+
+        case 28:
+          file.close();
+
+        case 29:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  });
 };
 
 var controller = {
