@@ -1,24 +1,25 @@
 const zlib = require("zlib");
-const fs = require("fs");
 
 zlib.createGzip();
 
-const fileName = "text.txt";
-const content = "1";
-const iterations = 100000000;
+// const fs = require('fs');
 
-const writeStream = fs.createWriteStream(fileName);
+// const fileName = 'text.txt';
+// const content = '1';
+// const iterations = 100000000;
 
-for (let i = 0; i < iterations; i++) {
-  writeStream.write(content);
-}
+// const writeStream = fs.createWriteStream(fileName);
 
-writeStream.end();
+// for (let i = 0; i < iterations; i++) {
+//     writeStream.write(content);
+// }
 
-writeStream.on("finish", () => {
-  console.log("File has been written successfully.");
-});
+// writeStream.end();
 
-writeStream.on("error", (err) => {
-  console.error("An error occurred:", err.message);
-});
+// writeStream.on('finish', () => {
+//     console.log('File has been written successfully.');
+// });
+
+// writeStream.on('error', (err) => {
+//     console.error('An error occurred:', err.message);
+// });
