@@ -1,25 +1,9 @@
 const zlib = require("zlib");
+const fs = require("fs");
 
-zlib.createGzip();
+const src = fs.createReadStream("./text.txt");
+const dist = fs.createWriteStream("./text-compressed");
 
-// const fs = require('fs');
+src.pipe(zlib.createGzip()).pipe(dist);
 
-// const fileName = 'text.txt';
-// const content = '1';
-// const iterations = 100000000;
-
-// const writeStream = fs.createWriteStream(fileName);
-
-// for (let i = 0; i < iterations; i++) {
-//     writeStream.write(content);
-// }
-
-// writeStream.end();
-
-// writeStream.on('finish', () => {
-//     console.log('File has been written successfully.');
-// });
-
-// writeStream.on('error', (err) => {
-//     console.error('An error occurred:', err.message);
-// });
+zlib.createGunzip();
